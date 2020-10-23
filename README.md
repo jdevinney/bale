@@ -50,7 +50,7 @@ The original bale (now called "[bale_classic](src/bale_classic/README.md)") was 
 * Sep. 2019: version 2.1.0
   * update conveyors to version 0.5.0
 
-* Nov. 2020: version 3.0.0
+* Oct. 2020: version 3.0.0
   * Added cousins: Rust, Parallel Rust, Serial C, and Chapel to bale
   * new bale_classic features:
     * New graph model: Geometric graphs
