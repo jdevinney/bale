@@ -1,0 +1,12 @@
+[package]
+name = "shmem-sys"
+version = "0.1.0"
+authors = ["Bill Carlson <wwc559@gmail.com>"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.53"
+

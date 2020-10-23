@@ -1,0 +1,172 @@
+The conveyor package offers the usual build process provided by the GNU
+autotools, namely: configure; make; make check; make install.  But it also
+supports autotuning of the default buffer size and communication mechanism.
+So the recommended sequence of steps is:
+
+   configure; make; make check; make tune; make; make install
+
+Both 'make check' and 'make tune' require an argument that specifies how to
+launch a parallel job.
+
+Conveyors can make use of several different underlying communication
+mechanisms, which involve different configuration options and dependencies.
+The supported mechanisms are:
+
+0) Trivial (no parallelism)
+1) Raw SHMEM
+2) Raw MPI
+3) UPC
+4) mpp_utilV4 with SHMEM
+5) mpp_utilV4 with MPI
+6) mpp_utilV4 with no parallelism
+
+
+CONFIGURATION
+
+When running the configure script, use the --prefix= option to specify the
+top-level installation directory.  Otherwise you won't be able to build
+anything else using conveyors; you will only be able to run the built-in
+test/benchmark program.
+
+
+BUILDING WITH SHMEM OR MPI
+
+When given the option --with-shmem or --with-mpi, the configuration script
+assumes that the underlying communication mechanism is SHMEM or MPI,
+respectively.  It further assumes that the compiler and linker can
+automatically find the SHMEM or MPI headers and libraries.  To achieve this
+on a Cray system, for instance, it should suffice to ensure that a SHMEM
+module is loaded and then configure with
+
+   ./configure --with-shmem CC=cc --prefix=...
+
+If necessary, you can force the configure script to use the SHMEM library
+by writing something like
+
+   ./configure --with-shmem --prefix=... CPPFLAGS="-I$SHMEM_ROOT/include" \
+      LDFLAGS="-L$SHMEM_ROOT/lib" LIBS="-loshmem"
+
+after setting the variable SHMEM_ROOT appropriately.
+
+
+BUILDING WITH UPC
+
+The configuration option --with-upc causes the conveyor package to use UPC
+source code and communication mechanisms.  The configure script must be
+given an appropriate compiler, because its default compiler is gcc.  Both
+the variables CC and UPC must be set.  For instance, in the Cray
+programming environment:
+
+   ./configure --with-upc --prefix=... CC="cc -hupc" UPC="cc -hupc"
+
+You may have to run the configure script on the back end (e.g., via srun)
+if the front end cannot execute UPC programs.  Or if that fails, you can
+use cross-compiling options to tell the configure script that it cannot
+run compiled programs.  As an example,
+
+   ./configure --with-upc --prefix=... CC="cc -hupc" UPC="cc -hupc" \
+      --build=x86_64-unknown-linux-gnu --host=x86_64-cray-linux-gnu
+
+It probably doesn't matter what the build and host values are, as long
+as they have the correct format.
+
+The conveyor package is not currently compatible with Berkeley UPC for a
+variety of reasons, known and unknown.  Even if the build process can be
+made to work, the asynchronous conveyors may deadlock.
+
+
+BUILDING IN TRIVIAL MODE
+
+For testing and debugging, it can be desirable to build a single-process
+version of a parallel program with all communication mechanisms turned off
+(as they may not even exist on the same platform as the desired debugging
+tools).  So the conveyor package can be built in a "degenerate" or
+"trivial" mode in which a conveyor is merely a local FIFO queue.  Omitting
+all the --with options above (--with-shmem, --with-mpi, --with-upc,
+--with-mpp) causes the conveyor library to work in this fashion.
+
+
+CHECKING THE BUILD
+
+It is a good idea to verify the build if possible, but this requires a
+small amount of preparation.  First, the build directory must live on a
+filesystem from which parallel programs can be launched.  Second, you must
+tell 'make check' how to launch a parallel job with 96 processes (or any
+positive multiple of 96), unless the conveyor package was built in a
+non-parallel mode.  Set the LAUNCH variable either as an environment
+variable or on the 'make check' command line, as in the following examples:
+
+   make check LAUNCH="srun -n96"
+   make check LAUNCH="mpirun -np 192"
+   make check LAUNCH="salloc -n96 mpirun -np 96"
+
+In general, the value of LAUNCH must be a valid command prefix, so that
+
+   $LAUNCH <executable> <command-line arguments>
+
+works.  In a non-parallel mode, use LAUNCH="".
+
+In a pinch, you can directly run the scripts
+
+   ./test_simple
+   ./test_twohop
+   ./test_tensor
+   ./test_elastic
+
+after setting the LAUNCH environment variable appropriately.  (This example
+assumes that you built in the source directory.  Otherwise, stay in the
+build directory and replace "." by the path to the source directory.)
+
+
+AUTOTUNING
+
+To optimize the conveyor installation, one should run a tuning job on a
+substantial number of nodes.  On a large system, 128 nodes is recommended.
+You need to tell 'make tune' how to launch a job of the appropriate size.
+For instance, with 32 cores per node, you might say:
+
+   make tune LAUNCH="srun -n4096"
+
+After 'make tune' finishes, you need to run 'make' again to compile the
+new configuration into the conveyor library.
+
+
+INSTALLATION
+
+Because the build no longer uses libtool, its final products live in the
+build directory.  To put them in the designated place, type "make install".
+
+
+COPYRIGHT
+
+Copyright (c) 2020, Institute for Defense Analyses
+4850 Mark Center Drive, Alexandria, VA 22311-1882; 703-845-2500
+This material may be reproduced by or for the U.S. Government 
+pursuant to the copyright license under the clauses at DFARS 
+252.227-7013 and 252.227-7014.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * Neither the name of the copyright holder nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER NOR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.

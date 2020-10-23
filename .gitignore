@@ -1,0 +1,30 @@
+# Ignore Emacs and Vim backup files
+*~
+\#*
+*.swp
+
+# Ignore files created by autoconf
+aclocal.m4
+autom4te.cache/
+compile
+config.guess
+config.h.in
+config.sub
+configure
+depcomp
+install-sh
+ltmain.sh
+Makefile.in
+missing
+test-driver
+*.o
+
+# Ignore build directories
+build_*/
+target/
+html/
+latex/
+t
+
+#ignore apple DS_Store
+.DS_Store

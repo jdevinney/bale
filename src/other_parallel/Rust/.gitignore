@@ -1,0 +1,4 @@
+#Rust specific .gitignore
+
+Cargo.lock
+target/

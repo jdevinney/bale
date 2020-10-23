@@ -1,0 +1,142 @@
+This MAINTAIN file contains notes to orient a developer or maintainer.
+For instructions on how to build the conveyor package, see INSTALL.
+For an introduction to conveyors and the API documentation, first
+look at README.md, and then do any of the following:
+
+1) Read narrative.h and convey.h
+2) Build the package and peruse the pages rooted at ./html/index.html
+3) Build and install the package, then point your browser at
+   ${prefix}/share/doc/convey/html/index.html, where ${prefix} is the
+   root directory of the installation
+
+
+ARCHITECTURE
+
+Conveyors are implemented in an object-oriented way, as defined by
+convey_impl.h and convey.c.  That is, each conveyor is a structure whose
+first member is a pointer to a collection of methods, i.e., function
+pointers, and whose next few members are common to all conveyors.  Each
+subtype of conveyor extends the basic conveyor structure (convey_t) with
+additional fields specific to that subtype.  So, for example, a simple
+conveyor (simple_t, a type that is not exposed) is a structure whose
+first member is a convey_t.
+
+The public operations on conveyors, aside from constructors, are dispatch
+functions defined in convey.c.  Most of these functions perform some error
+checking before and/or after invoking the appropriate method for the given
+conveyor.
+
+Most of the conveyor code is written as if mpp_utilV4 were the substrate.
+In UPC mode, raw SHMEM mode, or raw MPI mode, or trivial mode, the header
+file mpp2upc.h, mpp2shmem.h, mpp2mpi.h, or mpp2nil.h, respectively, is
+included to redefine the necessary mpp_util functions in terms of UPC,
+SHMEM, MPI, or plain C operations.
+
+
+PORTERS AND SORTERS
+
+Two types of private, subsidiary objects are worth noting.  The
+asynchronous "tensor" and "etensor" conveyors rely on *porters* for
+communication (porter.h, porter.c).  The porter API is similar to the
+conveyor API but has a few important differences:
+
+ * The set of PEs involved is specified explicitly, via an array of PE
+   numbers, when the porter is constructed.
+
+ * The communication pattern forms a set of disjoint graphs, each of which
+   is either complete or complete bipartite.
+
+ * Rather than pulling individual items, the client pulls an entire buffer
+   of items at once. The client must understand the format of this buffer.
+
+ * Porter methods do very little error checking; they assume the caller has
+   done what is needed.
+
+A synchronous "simple" conveyor uses a *sorter* to accelerate the
+distribution of incoming items into buffers (sorter.h).  At some point
+other conveyors may use them as well.  We have experimented with two types
+of sorters: one (sorter.c) that uses a tree of buffers, trying to make the
+scatter at each level cache-friendly, and one (circle.c) that uses a small
+circular buffer to delay the movement of an item into its buffer until a
+prefetch has had some time to complete.  Only the latter type of sorter is
+currently in use.
+
+Porters are implemented as objects with their own methods, although many
+common operations are handled by the dispatch functions in porter.c.  For
+simplicity and speed, sorters are not currently implemented as objects.
+
+
+TESTING AND BENCHMARKING
+
+The package can build a versatile program called *alltoallv* for
+experimenting with conveyors.  This program is the basis for "make check".
+Its arguments are the type of conveyor, the *load* (average number of
+items) between each pair of PEs, and the item size in bytes.  It also
+supports numerous options for controlling the parameters of the conveyor.
+It distinguishes between "warmup" iterations, which are not timed but
+perform checksums of the items flowing through the conveyor to catch bugs,
+and "normal" iterations, which are timed and perform less checking.  By
+default, alltoallv performs one warmup iteration and one normal iteration.
+In addition to its standard mode which simply measures sustained throughput
+of all-to-all communication, it also has a mode that benchmarks the
+"indexgather" pattern of communication, in which requests are echoed by
+replies carried by a second conveyor.
+
+For more detail, run the program without arguments to see its usage
+statement.
+
+
+PREPARING FOR DISTRIBUTION
+
+Usually 'make distcheck' is wise, instead of 'make dist'.  For this, open
+a new shell and define the arguments to the configure script (CC, CFLAGS,
+CPPFLAGS, LDFLAGS) as environment variables.  For example:
+
+ % setenv CC cc
+ % setenv CFLAGS "-std=gnu99 -g -O2"
+ % setenv CPPFLAGS "-I$HOME/opt/include"
+ % setenv LDFLAGS "-I$HOME/opt/lib"
+
+Then, starting in the build directory:
+
+ % <srcdir>/configure --prefix=<somewhere>
+ % setenv LAUNCH ...
+ % make distcheck DISTCHECK_CONFIGURE_FLAGS="--with-mpp"
+
+The result should be a tarball ready for distribution.  See INSTALL for
+discussion of how to set the LAUNCH variable.
+
+
+COPYRIGHT
+
+Copyright (c) 2020, Institute for Defense Analyses
+4850 Mark Center Drive, Alexandria, VA 22311-1882; 703-845-2500
+This material may be reproduced by or for the U.S. Government 
+pursuant to the copyright license under the clauses at DFARS 
+252.227-7013 and 252.227-7014.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * Neither the name of the copyright holder nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER NOR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.

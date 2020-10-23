@@ -1,0 +1,20 @@
+# get a gupc image in public Dockerhub
+FROM npmolino/bale_public_gupc_with_pytest
+
+COPY . /opt/bale_private
+
+WORKDIR /opt/bale_private/src/bale_classic
+
+RUN ./bootstrap.sh
+ENV UPC gupc
+ENV PLATFORM gupc
+RUN ./make_bale -u
+
+RUN echo "---- done with install ----"
+
+# run as non-root user
+# bale_user exists from Dockerfile in the bale_public_gupc image at this point
+#RUN adduser --disabled-password --gecos "" bale_user
+
+
+

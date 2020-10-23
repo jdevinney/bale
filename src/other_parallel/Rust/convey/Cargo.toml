@@ -1,0 +1,29 @@
+[package]
+name = "convey_hpc"
+description = "Conveyor implementation in Rust for HPC"
+version = "0.1.0"
+authors = ["Bill Carlson <wwc559@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lazy_static = "1.4.0"
+shmem = { path="shmem" }
+bincode = "1.2"
+serde = { version = "1.0", features = ["derive"] }
+
+[workspace]
+members = [
+    "shmem",
+    "shmem-sys",
+    "pshmem-experimental",
+]
+
+[profile.release]
+debug = true
+
+[dev-dependencies]
+rand="0.7"
+clap="2"
+

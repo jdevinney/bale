@@ -1,0 +1,38 @@
+#/******************************************************************
+#
+#
+#  Copyright(C) 2020, Institute for Defense Analyses
+#  4850 Mark Center Drive, Alexandria, VA; 703-845-2500
+# 
+#
+#  All rights reserved.
+#  
+#   This file is a part of Bale.  For license information see the
+#   LICENSE file in the top level directory of the distribution.
+#  
+# 
+# *****************************************************************/ 
+[package]
+name = "bale"
+description = "Bale in Rust"
+version = "0.1.0"
+authors = ["Bill Carlson <wwc559@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "2.0"
+rand = "0.7"
+spmat = { path = "spmat" }
+convey_hpc = { path = "../../../../convey_private" }
+
+[workspace]
+members = [
+    "delta_stepping",
+    "spmat",
+    "toposort",
+    "triangle",
+]
+
+[profile.release]
+debug = true
+

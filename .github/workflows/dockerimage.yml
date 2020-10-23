@@ -1,0 +1,38 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master , github_actions ]
+  pull_request:
+    branches: [ master , github_actions ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build the oshmem Docker image
+      run: docker build . --file src/bale_classic/docker/oshmem/Dockerfile_github_action --tag bale_test_oshmem:gh_action
+    - name: Run the oshmem Docker image
+      run: docker run bale_test_oshmem:gh_action su bale_user - -c "oshrun -n 1 build_oshmem/bin/histo -M 1 -c 1"
+    #- name: Run pwd and ls
+    #  run: |
+    #    docker run bale_test_oshmem:gh_action su bale_user - -c "pwd && ls"
+    - name: Run pytest in oshmem Docker container
+      run: |
+        docker run bale_test_oshmem:gh_action pytest -s -p no:cacheprovider -P=/opt/bale_private/src/bale_classic/build_oshmem/bin/ --node_range=1,5,2 -M 3 apps/
+    - name: Build the gupc Docker image
+      run: docker build . --file src/bale_classic/docker/gupc/Dockerfile_github_action --tag bale_test_gupc:gh_action
+    - name: Run the gupc Docker image
+      run: docker run bale_test_gupc:gh_action su bale_user - -c "build_gupc/bin/histo -n 1"
+    #- name: Run pwd and ls in gupc container
+    #  run: |
+    #    docker run bale_test_gupc:gh_action su bale_user - -c "pwd && ls"
+    - name: Run pytest in gupc Docker container
+      run: |
+        docker run bale_test_gupc:gh_action pytest -s -p no:cacheprovider -P=/opt/bale_private/src/bale_classic/build_gupc/bin/ --node_range=1,5,2 apps/
+

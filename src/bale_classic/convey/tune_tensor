@@ -1,0 +1,152 @@
+#!/bin/sh -e
+
+# Copyright (c) 2020, Institute for Defense Analyses
+# 4850 Mark Center Drive, Alexandria, VA 22311-1882; 703-845-2500
+#
+# All rights reserved.
+#
+# This file is part of the conveyor package. For license information,
+# see the LICENSE file in the top level directory of the distribution.
+
+
+# Explore buffer sizes for tensor conveyors.  The suggested
+# number of processes for LAUNCH is 128 nodes.
+
+export MPP_INIT_QUIET=1
+$LAUNCH ./alltoall? -- <<EOF
+-B -c22528 -n3 -b2 matrix 512 32
+-c5056 -n3 -b2 matrix 512 32
+-B -c53568 -n3 -b2 matrix 512 32
+-c11968 -n3 -b2 matrix 512 32
+-B -c2688 -n3 -b2 matrix 512 32
+-c28416 -n3 -b2 matrix 512 32
+-B -c6336 -n3 -b2 matrix 512 32
+-c67520 -n3 -b2 matrix 512 32
+-B -c15040 -n3 -b2 matrix 512 32
+-c3392 -n3 -b2 matrix 512 32
+-B -c35776 -n3 -b2 matrix 512 32
+-c8000 -n3 -b2 matrix 512 32
+-B -c84992 -n3 -b2 matrix 512 32
+-c18944 -n3 -b2 matrix 512 32
+-B -c4224 -n3 -b2 matrix 512 32
+-c45056 -n3 -b2 matrix 512 32
+-B -c10048 -n3 -b2 matrix 512 32
+-c2240 -n3 -b2 matrix 512 32
+-B -c23872 -n3 -b2 matrix 512 32
+-c5312 -n3 -b2 matrix 512 32
+-B -c56768 -n3 -b2 matrix 512 32
+-c12672 -n3 -b2 matrix 512 32
+-B -c2816 -n3 -b2 matrix 512 32
+-c30080 -n3 -b2 matrix 512 32
+-B -c6720 -n3 -b2 matrix 512 32
+-c71488 -n3 -b2 matrix 512 32
+-B -c15936 -n3 -b2 matrix 512 32
+-c3584 -n3 -b2 matrix 512 32
+-B -c37888 -n3 -b2 matrix 512 32
+-c8448 -n3 -b2 matrix 512 32
+-B -c90048 -n3 -b2 matrix 512 32
+-c20096 -n3 -b2 matrix 512 32
+-B -c4480 -n3 -b2 matrix 512 32
+-c47744 -n3 -b2 matrix 512 32
+-B -c10624 -n3 -b2 matrix 512 32
+-c2368 -n3 -b2 matrix 512 32
+-B -c25280 -n3 -b2 matrix 512 32
+-c5632 -n3 -b2 matrix 512 32
+-B -c60160 -n3 -b2 matrix 512 32
+-c13440 -n3 -b2 matrix 512 32
+-B -c3008 -n3 -b2 matrix 512 32
+-c31872 -n3 -b2 matrix 512 32
+-B -c7104 -n3 -b2 matrix 512 32
+-c75776 -n3 -b2 matrix 512 32
+-B -c16896 -n3 -b2 matrix 512 32
+-c3776 -n3 -b2 matrix 512 32
+-B -c40128 -n3 -b2 matrix 512 32
+-c8960 -n3 -b2 matrix 512 32
+-B -c95424 -n3 -b2 matrix 512 32
+-c21248 -n3 -b2 matrix 512 32
+-B -c4736 -n3 -b2 matrix 512 32
+-c50560 -n3 -b2 matrix 512 32
+-B -c11264 -n3 -b2 matrix 512 32
+-c2560 -n3 -b2 matrix 512 32
+-B -c26816 -n3 -b2 matrix 512 32
+-c6016 -n3 -b2 matrix 512 32
+-B -c63680 -n3 -b2 matrix 512 32
+-c14208 -n3 -b2 matrix 512 32
+-B -c3200 -n3 -b2 matrix 512 32
+-c33792 -n3 -b2 matrix 512 32
+-B -c7552 -n3 -b2 matrix 512 32
+-c80256 -n3 -b2 matrix 512 32
+-B -c17920 -n3 -b2 matrix 512 32
+-c4032 -n3 -b2 matrix 512 32
+-B -c42496 -n3 -b2 matrix 512 32
+-c9472 -n3 -b2 matrix 512 32
+-B -c2112 -n3 -b2 matrix 512 32
+-c22528 -n3 -b2 matrix 512 32
+-B -c5056 -n3 -b2 matrix 512 32
+-c53568 -n3 -b2 matrix 512 32
+-B -c11968 -n3 -b2 matrix 512 32
+-c2688 -n3 -b2 matrix 512 32
+-B -c28416 -n3 -b2 matrix 512 32
+-c6336 -n3 -b2 matrix 512 32
+-B -c67520 -n3 -b2 matrix 512 32
+-c15040 -n3 -b2 matrix 512 32
+-B -c3392 -n3 -b2 matrix 512 32
+-c35776 -n3 -b2 matrix 512 32
+-B -c8000 -n3 -b2 matrix 512 32
+-c84992 -n3 -b2 matrix 512 32
+-B -c18944 -n3 -b2 matrix 512 32
+-c4224 -n3 -b2 matrix 512 32
+-B -c45056 -n3 -b2 matrix 512 32
+-c10048 -n3 -b2 matrix 512 32
+-B -c2240 -n3 -b2 matrix 512 32
+-c23872 -n3 -b2 matrix 512 32
+-B -c5312 -n3 -b2 matrix 512 32
+-c56768 -n3 -b2 matrix 512 32
+-B -c12672 -n3 -b2 matrix 512 32
+-c2816 -n3 -b2 matrix 512 32
+-B -c30080 -n3 -b2 matrix 512 32
+-c6720 -n3 -b2 matrix 512 32
+-B -c71488 -n3 -b2 matrix 512 32
+-c15936 -n3 -b2 matrix 512 32
+-B -c3584 -n3 -b2 matrix 512 32
+-c37888 -n3 -b2 matrix 512 32
+-B -c8448 -n3 -b2 matrix 512 32
+-c90048 -n3 -b2 matrix 512 32
+-B -c20096 -n3 -b2 matrix 512 32
+-c4480 -n3 -b2 matrix 512 32
+-B -c47744 -n3 -b2 matrix 512 32
+-c10624 -n3 -b2 matrix 512 32
+-B -c2368 -n3 -b2 matrix 512 32
+-c25280 -n3 -b2 matrix 512 32
+-B -c5632 -n3 -b2 matrix 512 32
+-c60160 -n3 -b2 matrix 512 32
+-B -c13440 -n3 -b2 matrix 512 32
+-c3008 -n3 -b2 matrix 512 32
+-B -c31872 -n3 -b2 matrix 512 32
+-c7104 -n3 -b2 matrix 512 32
+-B -c75776 -n3 -b2 matrix 512 32
+-c16896 -n3 -b2 matrix 512 32
+-B -c3776 -n3 -b2 matrix 512 32
+-c40128 -n3 -b2 matrix 512 32
+-B -c8960 -n3 -b2 matrix 512 32
+-c95424 -n3 -b2 matrix 512 32
+-B -c21248 -n3 -b2 matrix 512 32
+-c4736 -n3 -b2 matrix 512 32
+-B -c50560 -n3 -b2 matrix 512 32
+-c11264 -n3 -b2 matrix 512 32
+-B -c2560 -n3 -b2 matrix 512 32
+-c26816 -n3 -b2 matrix 512 32
+-B -c6016 -n3 -b2 matrix 512 32
+-c63680 -n3 -b2 matrix 512 32
+-B -c14208 -n3 -b2 matrix 512 32
+-c3200 -n3 -b2 matrix 512 32
+-B -c33792 -n3 -b2 matrix 512 32
+-c7552 -n3 -b2 matrix 512 32
+-B -c80256 -n3 -b2 matrix 512 32
+-c17920 -n3 -b2 matrix 512 32
+-B -c4032 -n3 -b2 matrix 512 32
+-c42496 -n3 -b2 matrix 512 32
+-B -c9472 -n3 -b2 matrix 512 32
+-c2112 -n3 -b2 matrix 512 32
+EOF
+exit 0

@@ -1,0 +1,35 @@
+# Copyright (c) 2020, Institute for Defense Analyses
+# 4850 Mark Center Drive, Alexandria, VA 22311-1882; 703-845-2500
+#
+# All rights reserved.
+#
+# This file is part of the conveyor package. For license information,
+# see the LICENSE file in the top level directory of the distribution.
+
+
+clean-local: clean-local-doxygen
+.PHONY: clean-local-doxygen
+clean-local-doxygen:
+	rm -rf html latex
+
+if HAVE_DOXYGEN
+
+doxypkg = $(PACKAGE_TARNAME)-doxy-$(PACKAGE_VERSION).tar.gz
+doc_DATA = $(doxypkg)
+
+$(doxypkg): doxygen.stamp
+	tar chof - html | gzip -9 -c >$@
+
+doxygen.stamp: Doxyfile narrative.h convey.h convey_alc8r.h convey_codec.h biconvey.h
+	doxygen $<
+	echo Timestamp > $@
+
+install-data-hook:
+	cd $(DESTDIR)$(docdir) && tar xf $(doxypkg) && rm -f $(doxypkg)
+
+uninstall-hook:
+	cd $(DESTDIR)$(docdir) && rm -rf html
+
+CLEANFILES += doxywarn.txt doxygen.stamp $(doxypkg)
+
+endif

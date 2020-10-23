@@ -1,0 +1,12 @@
+Name: @PACKAGE_NAME@
+Version: @PACKAGE_VERSION@
+Description: exstack library 
+Requires: 
+
+prefix=@prefix@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Libs: -L${libdir} -l@PACKAGE_NAME@
+Cflags: -I${includedir}
+

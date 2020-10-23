@@ -1,0 +1,21 @@
+# Ignore Emacs backup files
+*~
+# Ignore this autoconf cache, which isn't distributed
+autom4te.cache/
+# Ignore some other files created by autoconf.  If the build process
+# starts to use $host_cpu, then we will need to distribute
+# config.guess and config.sub
+m4/libtool.m4
+m4/lt*
+aclocal.m4
+compile
+config.h.in
+config.guess
+config.sub
+configure
+depcomp
+install-sh
+ltmain.sh
+Makefile.in
+missing
+test-driver

@@ -1,0 +1,27 @@
+#!/bin/sh -e
+
+# Copyright (c) 2020, Institute for Defense Analyses
+# 4850 Mark Center Drive, Alexandria, VA 22311-1882; 703-845-2500
+#
+# All rights reserved.
+#
+# This file is part of the conveyor package. For license information,
+# see the LICENSE file in the top level directory of the distribution.
+
+export MPP_INIT_QUIET=1
+$LAUNCH ./alltoall? -- <<EOF
+-R -A -b1 -c200 -w10 -C     vector 100 16
+-R -A -b1 -c440 -w10 -t8 -d matrix 100 40
+-R -A -b2 -c120 -w10 -t6 -g matrix 100
+-R -A -b1 -c280 -w10 -t4    tensor 100 24
+-R -A -b2 -c240 -w10 -t4 -d tensor 100 20
+-R -A -b2 -c120 -w10 -t4 -g tensor 100
+-R -A -b4 -c200 -w10 -t3    tensor 100 16
+-R -A -b2 -c360 -w10     -dpy vector 100 32
+-R -A -b4 -c400 -w10 -t8 -py  matrix 100 36
+-R -A -b1 -c320 -w10 -t4 -dpy tensor 100 28
+-R -M -b2 -c500 -w20        vector 100 64
+-R -M -b2 -c500 -w20 -t8    matrix 100 64
+-R -M -b2 -c500 -w20 -t4    tensor 100 64
+EOF
+exit 0

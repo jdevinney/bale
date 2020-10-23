@@ -1,0 +1,18 @@
+FROM gupc_with_pytest:latest
+
+# copy bale from host into container (the host should be sitting at the top level of bale_private)
+COPY . /opt/bale_private
+
+WORKDIR /opt/bale_private/src/bale_classic
+
+RUN ./bootstrap.sh
+ENV UPC gupc
+ENV PLATFORM gupc
+RUN ./make_bale -u
+
+RUN echo "---- done with install ----"
+
+WORKDIR /opt/bale_private/src/bale_classic/apps
+
+RUN pytest -s -P=/opt/bale_private/src/bale_classic/build_gupc/bin --node_range=1,3,1 
+

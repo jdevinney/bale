@@ -1,0 +1,7 @@
+docker build -t sos sos
+
+docker run --rm -it -v /Users/conn/Bale/bale_private:/opt/bale_private sos  sh -c "cd /opt/bale_private && ./bootstrap.sh && export CC=oshcc && export PLATFORM=sos && export LD_LIBRARY_PATH=/usr/local/lib  && ./install.sh -s  && bash"
+
+
+Modify path  /Users/conn/Bale/bale_private:/opt/bale_private as needed.
+

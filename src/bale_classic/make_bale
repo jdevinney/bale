@@ -1,0 +1,188 @@
+#!/usr/bin/env python
+#-*- mode: python -*-
+
+#/******************************************************************
+#
+#
+#  Copyright(C) 2020, Institute for Defense Analyses
+#  4850 Mark Center Drive, Alexandria, VA; 703-845-2500
+# 
+#
+#  All rights reserved.
+#  
+#   This file is a part of Bale.  For license information see the
+#   LICENSE file in the top level directory of the distribution.
+#  
+# 
+# *****************************************************************/ 
+
+import sys
+if sys.version_info[0] < 3 or sys.version_info[1] < 5:
+  print("This script requires at least Python version 3.5")
+  sys.exit(1)
+
+import subprocess
+import os
+import argparse
+
+
+PACKAGES = ["libgetput", "exstack", "convey", "spmat", "std_options", "apps"]
+
+SRCDIR = os.path.abspath(os.getcwd())
+PLATFORM = os.environ.get("PLATFORM", "unknown")
+default_build_dir = os.path.join(SRCDIR, "build_{0}".format(PLATFORM))
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description="""Convenience build script for bale. This script 
+  runs configure (if it has not been run or if forced to by -f flag) and make install for each package in bale.
+  For developers of bale, the script tries to be stingy about what it remakes to limit unnecessary building.""")
+  
+  parser.add_argument('-b', '--build_dir', action="store", dest="build_dir",
+                      help="Specify a build directory. You must run configure for this change to take effect. "
+                      " Use the -f option to force configure to run.", default=default_build_dir)
+  parser.add_argument('-c', '--config_opts', action="store", dest="config_opts",
+                      help="Specify some options to pass on to configure. If you have already built bale, "
+                      "you might need to run with the -f option to force configure to run again.", default="")
+  parser.add_argument('-f','--fromscratch', action="store_true", dest="fromscratch",
+                      help="Force configure to be run in each directory.")
+  parser.add_argument('-i', '--install_dir', action="store", dest="install_dir",
+                      help="Specify the install directory. You must run configure for this change to take effect. "
+                      " Use the -f option to force configure to run.",
+                      default=None)
+  parser.add_argument('-j', '--jobs', action="store", dest="jobs", nargs='?',
+                      help="Pass this option onto make for parallel make.", const="", default=None)
+  parser.add_argument('-s', '--shmem', action="store_true", dest="shmem",
+                      help="Specify that this is a shmem build.", default=False)
+  parser.add_argument('-u', '--upc', action="store_true", dest="upc",
+                      help="Specify that this is a UPC build.", default=False)
+  
+  args = parser.parse_args()
+  
+  build_dir = args.build_dir
+  if args.install_dir == None:
+    install_dir = build_dir
+  else:
+    install_dir = args.install_dir
+
+  print("*******************************************************")
+  print("build_dir   = {0}".format(build_dir))
+  print("install_dir = {0}".format(install_dir))
+  if(args.shmem):
+    print("Shmem build")
+  elif (args.upc):
+    print("UPC build")
+  print("********************************************************")
+  
+  if not os.path.isdir(build_dir):
+    os.mkdir(build_dir)
+
+  if not os.path.isdir(install_dir):
+    os.mkdir(install_dir)
+
+  # add install dir to PKG_CONFIG_PATH
+  sys_pkg_config_path = os.environ.get("PKG_CONFIG_PATH")
+  pkp = "{0}/lib/pkgconfig".format(install_dir)
+  if sys_pkg_config_path is not None:
+    os.environ["PKG_CONFIG_PATH"] = "{0}:{1}".format(pkp, sys_pkg_config_path)
+  else:
+    os.environ["PKG_CONFIG_PATH"] =  "{0}".format(pkp)
+  #print("PKG_CONFIG_PATH = ",os.environ.get("PKG_CONFIG_PATH"))
+
+  pkg_status = {}
+  
+  for pkg in PACKAGES:
+    pkg_status[pkg] = ""
+    print("********************")
+    print(pkg)
+    print("********************")
+    os.chdir(SRCDIR)
+    pkg_build_dir = os.path.join(build_dir, pkg)
+    if not os.path.isdir(pkg_build_dir):
+      os.mkdir(pkg_build_dir)
+    os.chdir(pkg_build_dir)
+
+    if args.fromscratch or (not os.path.exists('Makefile')):
+      # if you are running configure, the user must specify which build this is
+      if(args.shmem == False and args.upc == False):
+        print("You must specify the -u (UPC) or -s (SHMEM) option")
+        exit(1)
+      if args.shmem:
+        lang="--with-shmem"
+      else:
+        lang="--with-upc"
+
+      cmd = "{0}/{1}/configure --enable-dependency-tracking --prefix={2} {3} {4}".format(SRCDIR, pkg, install_dir, lang, args.config_opts)
+      print(cmd)
+      ret = subprocess.run(cmd, shell=True)
+      if ret.returncode:
+        sys.stderr.write("Configure of {0} failed.\n".format(pkg))
+        pkg_status[pkg] = "failed configure"
+        break
+
+      # make clean
+      cmd = 'make clean'
+      subprocess.run(cmd, shell=True)
+
+    # we will be fancy here to try to determine if anything actually got made
+    # for libraries, I do this in a dumb way because I think there is something
+    # wrong with autotools... make -q always returns 1, even if make does nothing
+    # set do_install to True if we will run make install in the directory because 
+    # we think something has changed.
+    do_install = False
+    if pkg != "apps":
+      if os.path.exists("lib{0}.a".format(pkg)):
+        orig_time = os.path.getmtime("lib{0}.a".format(pkg))
+      else:
+        orig_time = ""
+
+      cmd = "make"
+      if args.jobs is not None: cmd += " -j {0}".format(args.jobs)
+      ret = subprocess.run(cmd, shell=True)    
+      if ret.returncode:
+        sys.stderr.write("build of {0} failed.\n".format(pkg))
+        pkg_status[pkg] = "failed make"
+        break
+
+      new_time = os.path.getmtime("lib{0}.a".format(pkg))
+      if orig_time != new_time:
+        do_install = True
+    else:
+      cmd = 'make -q'
+      ret = subprocess.run(cmd, shell=True)    
+      if ret.returncode:
+        cmd = "make"
+        if args.jobs is not None: cmd += " -j {0}".format(args.jobs)
+        ret = subprocess.run(cmd,  shell=True)    
+        if ret.returncode:
+          sys.stderr.write("build of {0} failed.\n".format(pkg))
+        do_install = True
+
+    if do_install:
+      print("Looks like we need to remake {0}".format(pkg))
+      cmd = "make install"
+      ret = subprocess.run(cmd, shell=True)
+      if ret.returncode:
+        sys.stderr.write("build of {0} failed.\n".format(pkg))
+        pkg_status[pkg] = "failed make install"
+        break
+      else:
+        pkg_status[pkg] += "built"
+        
+    else:
+      pkg_status[pkg] += "no need to build"
+      
+  print()
+  print("****************************************************************")
+  print("****************************************************************")
+  print("                             Report                             ")
+  print("****************************************************************")
+  print("****************************************************************")
+  for pkg in PACKAGES:
+    if pkg in pkg_status:
+      print("{0:12} : {1}".format(pkg, pkg_status[pkg]))
+  print()
+  print("build directory   : {0}".format(build_dir))
+  print("install directory : {0}".format(install_dir))  
+  print("All bale apps installed in {0}/bin".format(install_dir))
+  print("Run any app with --help option for usage.")
+  print()

@@ -1,0 +1,18 @@
+# get a oshmem image in public Dockerhub
+FROM npmolino/bale_public_oshmem4.0.3_with_pytest:latest
+
+COPY . /opt/bale_private
+
+WORKDIR /opt/bale_private/src/bale_classic
+
+RUN ./bootstrap.sh
+ENV CC oshcc 
+ENV PLATFORM oshmem
+RUN ./make_bale -s
+
+RUN echo "---- done with install ----"
+
+# run as non-root user
+RUN adduser --disabled-password --gecos "" bale_user
+
+

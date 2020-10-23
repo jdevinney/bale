@@ -1,0 +1,21 @@
+#!/bin/sh -e
+
+# Copyright (c) 2020, Institute for Defense Analyses
+# 4850 Mark Center Drive, Alexandria, VA 22311-1882; 703-845-2500
+#
+# All rights reserved.
+#
+# This file is part of the conveyor package. For license information,
+# see the LICENSE file in the top level directory of the distribution.
+
+# -f0 means it's ok for the twohop constructor to fail
+export MPP_INIT_QUIET=1
+$LAUNCH ./alltoall? -- <<EOF
+-R -A -f0 -c160 -w10 -t4 -C   twohop 100 16
+-R -A -f0 -c80  -w10 -t4 -g   twohop 100
+-R -A -f0 -c560 -w10 -t6 -d   twohop 100 56
+-R -A -f0 -c160 -w10 -t8 -p   twohop 100 16
+-R -A -f0 -c160 -w10 -t4 -dpy twohop 100 16
+-R -M -f0 -c500 -w40 -t8      twohop 100 64
+EOF
+exit 0

@@ -1,0 +1,30 @@
+FROM oshmem4.0.3_with_pytest:latest
+
+COPY . /opt/bale_private
+
+WORKDIR /opt/bale_private/src/bale_classic
+
+RUN ./bootstrap.sh
+ENV CC oshcc
+ENV PLATFORM oshmem
+RUN ./make_bale -s
+
+RUN echo "---- done with install ----"
+
+# run as non-root user
+RUN adduser --disabled-password --gecos "" bale_user
+RUN export NUM_CORES=$(grep cores /proc/cpuinfo | awk '{print $4}' | head -n 1) && \
+    echo NUM_CORES is $NUM_CORES && \
+    su bale_user - -c "oshrun -n $NUM_CORES build_${PLATFORM}/bin/histo -M 1 -c 1"
+
+# here we actaully run it as root
+RUN echo "--- run as root ---"
+ENV OMPI_ALLOW_RUN_AS_ROOT 1
+ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM 1
+RUN NUM_CORES=$(grep cores /proc/cpuinfo | awk '{print $4}' | head -n 1) && \
+    echo NUM_CORES is $NUM_CORES && \
+    oshrun -n 2 build_${PLATFORM}/bin/histo -M 1 -c 2
+
+
+RUN pytest -s -p no:cacheprovider  --node_range=1,5,2 apps/
+
