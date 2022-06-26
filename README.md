@@ -18,6 +18,8 @@ We use bale to evolve our thinking on parallel programming in the effort to make
 
 The original bale (now called "[bale_classic](src/bale_classic/README.md)") was implemented in UPC or C and SHMEM. If you are new to bale, you should start by exploring there. New in bale 3.0, the bale repository now contains other variants of bale (sequential, parallel, and custom parallel). Each variant is a separate project and comes with its own build and run instructions. All source code is found in the src directory.
 
+Here is a short [presentation on bale](docs/Bale-StGirons-Final.pdf) from June 2022.
+
 ### Contents
 
 **[bale_classic](src/bale_classic/README.md)**: Built with UPC or C/SHMEM. Contains three aggregation APIs (exstack, exstack2, and conveyors) and the widest collection of [apps](src/bale_classic/apps/README.md) and implementations of those apps.  Location: src/bale_classic
